@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { 
-  Calendar,
+  Calendar as CalendarIcon,
   ImageIcon,
   MapPin,
   ArrowUpDown,
@@ -43,25 +42,27 @@ interface SortOption {
   order: 'asc' | 'desc';
 }
 
+// Define view types
+type ViewType = 'listings' | 'schedule' | 'gallery' | 'map';
+
 const DesignerDirectory = () => {
   const [designers, setDesigners] = useState<Designer[]>([]);
   const [filteredDesigners, setFilteredDesigners] = useState<Designer[]>([]);
   const [shortlistedIds, setShortlistedIds] = useState<Set<number>>(new Set());
   const [hiddenIds, setHiddenIds] = useState<Set<number>>(new Set());
   const [showOnlyShortlisted, setShowOnlyShortlisted] = useState(false);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [showGalleryModal, setShowGalleryModal] = useState(false);
-  const [showMapModal, setShowMapModal] = useState(false);
-  const [showSortOptions, setShowSortOptions] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [selectedDesigner, setSelectedDesigner] = useState<Designer | null>(null);
   const [recentlyHidden, setRecentlyHidden] = useState<number | null>(null);
+  const [showSortOptions, setShowSortOptions] = useState(false);
   const [currentSort, setCurrentSort] = useState<SortOption>({
     label: 'Sort by Experience',
     key: 'experience',
     order: 'desc'
   });
+  // New state for active view
+  const [activeView, setActiveView] = useState<ViewType>('listings');
 
   const sortOptions: SortOption[] = [
     { label: 'Sort by Experience', key: 'experience', order: 'desc' },
@@ -176,12 +177,161 @@ const DesignerDirectory = () => {
     return stars;
   };
 
+  // Components for different views
+  const ScheduleView = () => (
+    <div className="flex flex-col items-center justify-center py-16">
+      <CalendarIcon className="w-16 h-16 text-gray-300 mb-4" />
+      <h2 className="text-xl font-semibold mb-2">Scheduling</h2>
+      <p className="text-gray-600 text-center max-w-sm">
+        Booking functionality coming soon. Stay tuned!
+      </p>
+    </div>
+  );
+
+  const GalleryView = () => (
+    <div className="py-8">
+      <h2 className="text-xl font-semibold mb-4 text-center">Project Gallery</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[
+          "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400",
+          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400",
+          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400",
+          "https://images.unsplash.com/photo-1618221195710-dd6b41faaea8?w=400"
+        ].map((img, idx) => (
+          <div key={idx} className="rounded-lg overflow-hidden shadow-md">
+            <img
+              src={img}
+              alt={`Portfolio ${idx + 1}`}
+              className="w-full h-48 object-cover"
+            />
+            <div className="p-3 bg-white">
+              <p className="text-sm font-medium">Design Project {idx + 1}</p>
+              <p className="text-xs text-gray-500">Interior Design</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const MapView = () => (
+    <div className="flex flex-col items-center justify-center py-16">
+      <div className="w-full max-w-md h-48 bg-gray-100 mb-4 rounded-lg flex items-center justify-center">
+        <MapPin className="w-10 h-10 text-gray-300" />
+      </div>
+      <h2 className="text-xl font-semibold mb-2">Location Map</h2>
+      <p className="text-gray-600 text-center max-w-sm">
+        Location preview coming soon. Enable location services to view nearby designers.
+      </p>
+    </div>
+  );
+
+  const ListingsView = () => (
+    <div className="space-y-4">
+      {filteredDesigners.map((designer) => (
+        <Card key={designer.id} className="p-4 bg-white shadow-sm">
+          <div className="flex justify-between items-start mb-3">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">{designer.name}</h3>
+              <div className="flex items-center gap-1 mt-1">
+                {renderStars(designer.rating)}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedDesigner(designer);
+                setShowDetailsModal(true);
+              }}
+              className="text-amber-600 text-sm"
+            >
+              Details
+            </Button>
+          </div>
+
+          <p className="text-gray-600 text-sm mb-4">{designer.description}</p>
+
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="text-center">
+              <div className="text-xl font-bold text-gray-900">{designer.projects}</div>
+              <div className="text-xs text-gray-500">Projects</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-gray-900">{designer.experience}</div>
+              <div className="text-xs text-gray-500">Years</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold text-gray-900">{designer.priceRange}</div>
+              <div className="text-xs text-gray-500">Price</div>
+            </div>
+          </div>
+
+          <div className="space-y-1 mb-4">
+            <div className="text-sm text-gray-700">{designer.phone1}</div>
+            <div className="text-sm text-gray-700">{designer.phone2}</div>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => hideDesigner(designer.id)}
+                className="text-gray-500"
+              >
+                <EyeOff className="w-4 h-4" />
+                <span className="ml-1 text-xs">Hide</span>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSelectedDesigner(designer);
+                  setShowReportModal(true);
+                }}
+                className="text-gray-500"
+              >
+                <Flag className="w-4 h-4" />
+                <span className="ml-1 text-xs">Report</span>
+              </Button>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => toggleShortlist(designer.id)}
+              className={shortlistedIds.has(designer.id) ? 'text-red-500' : 'text-gray-400'}
+            >
+              {shortlistedIds.has(designer.id) ? (
+                <BookmarkCheck className="w-5 h-5 fill-current" />
+              ) : (
+                <Bookmark className="w-5 h-5" />
+              )}
+              <span className="ml-1 text-xs">Shortlist</span>
+            </Button>
+          </div>
+        </Card>
+      ))}
+
+      {filteredDesigners.length === 0 && (
+        <div className="text-center py-8">
+          <p className="text-gray-500">No designers found</p>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div 
+            className="flex items-center gap-3 cursor-pointer" 
+            onClick={() => setActiveView('listings')}
+          >
             <img 
               src="/lovable-uploads/de251bab-7a07-4dd1-ab51-268854eca36e.png" 
               alt="EmptyCup" 
@@ -206,18 +356,18 @@ const DesignerDirectory = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowScheduleModal(true)}
-              className="flex flex-col items-center gap-1 h-auto py-2 text-amber-600"
+              onClick={() => setActiveView('schedule')}
+              className={`flex flex-col items-center gap-1 h-auto py-2 ${activeView === 'schedule' ? 'text-amber-600' : ''}`}
             >
-              <Calendar className="w-5 h-5" />
+              <CalendarIcon className="w-5 h-5" />
               <span className="text-xs">Schedule</span>
             </Button>
             
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowGalleryModal(true)}
-              className="flex flex-col items-center gap-1 h-auto py-2"
+              onClick={() => setActiveView('gallery')}
+              className={`flex flex-col items-center gap-1 h-auto py-2 ${activeView === 'gallery' ? 'text-amber-600' : ''}`}
             >
               <ImageIcon className="w-5 h-5" />
               <span className="text-xs">Gallery</span>
@@ -226,8 +376,8 @@ const DesignerDirectory = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowMapModal(true)}
-              className="flex flex-col items-center gap-1 h-auto py-2"
+              onClick={() => setActiveView('map')}
+              className={`flex flex-col items-center gap-1 h-auto py-2 ${activeView === 'map' ? 'text-amber-600' : ''}`}
             >
               <MapPin className="w-5 h-5" />
               <span className="text-xs">Map</span>
@@ -275,100 +425,12 @@ const DesignerDirectory = () => {
         </div>
       )}
 
-      {/* Designer Cards */}
-      <div className="max-w-md mx-auto px-4 py-6 space-y-4">
-        {filteredDesigners.map((designer) => (
-          <Card key={designer.id} className="p-4 bg-white shadow-sm">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">{designer.name}</h3>
-                <div className="flex items-center gap-1 mt-1">
-                  {renderStars(designer.rating)}
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSelectedDesigner(designer);
-                  setShowDetailsModal(true);
-                }}
-                className="text-amber-600 text-sm"
-              >
-                Details
-              </Button>
-            </div>
-
-            <p className="text-gray-600 text-sm mb-4">{designer.description}</p>
-
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="text-center">
-                <div className="text-xl font-bold text-gray-900">{designer.projects}</div>
-                <div className="text-xs text-gray-500">Projects</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-gray-900">{designer.experience}</div>
-                <div className="text-xs text-gray-500">Years</div>
-              </div>
-              <div className="text-center">
-                <div className="text-xl font-bold text-gray-900">{designer.priceRange}</div>
-                <div className="text-xs text-gray-500">Price</div>
-              </div>
-            </div>
-
-            <div className="space-y-1 mb-4">
-              <div className="text-sm text-gray-700">{designer.phone1}</div>
-              <div className="text-sm text-gray-700">{designer.phone2}</div>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => hideDesigner(designer.id)}
-                  className="text-gray-500"
-                >
-                  <EyeOff className="w-4 h-4" />
-                  <span className="ml-1 text-xs">Hide</span>
-                </Button>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedDesigner(designer);
-                    setShowReportModal(true);
-                  }}
-                  className="text-gray-500"
-                >
-                  <Flag className="w-4 h-4" />
-                  <span className="ml-1 text-xs">Report</span>
-                </Button>
-              </div>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => toggleShortlist(designer.id)}
-                className={shortlistedIds.has(designer.id) ? 'text-red-500' : 'text-gray-400'}
-              >
-                {shortlistedIds.has(designer.id) ? (
-                  <BookmarkCheck className="w-5 h-5 fill-current" />
-                ) : (
-                  <Bookmark className="w-5 h-5" />
-                )}
-                <span className="ml-1 text-xs">Shortlist</span>
-              </Button>
-            </div>
-          </Card>
-        ))}
-
-        {filteredDesigners.length === 0 && (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No designers found</p>
-          </div>
-        )}
+      {/* Content Area - Render different views based on activeView state */}
+      <div className="max-w-md mx-auto px-4 py-6">
+        {activeView === 'listings' && <ListingsView />}
+        {activeView === 'schedule' && <ScheduleView />}
+        {activeView === 'gallery' && <GalleryView />}
+        {activeView === 'map' && <MapView />}
       </div>
 
       {/* Undo Snackbar */}
@@ -388,56 +450,6 @@ const DesignerDirectory = () => {
           </div>
         </div>
       )}
-
-      {/* Schedule Modal */}
-      <Dialog open={showScheduleModal} onOpenChange={setShowScheduleModal}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Schedule Appointment</DialogTitle>
-          </DialogHeader>
-          <div className="text-center py-8">
-            <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-600">Booking functionality coming soon. Stay tuned!</p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Gallery Modal */}
-      <Dialog open={showGalleryModal} onOpenChange={setShowGalleryModal}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Sample Portfolio</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400",
-              "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400",
-              "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400",
-              "https://images.unsplash.com/photo-1618221195710-dd6b41faaea8?w=400"
-            ].map((img, idx) => (
-              <img
-                key={idx}
-                src={img}
-                alt={`Portfolio ${idx + 1}`}
-                className="w-full h-24 object-cover rounded"
-              />
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Map Modal */}
-      <Dialog open={showMapModal} onOpenChange={setShowMapModal}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Designer Locations</DialogTitle>
-          </DialogHeader>
-          <div className="text-center py-8">
-            <MapPin className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-600">Location services are currently disabled. Enable them to view designer locations.</p>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Details Modal */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
