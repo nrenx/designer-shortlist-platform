@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -154,6 +155,12 @@ const DesignerDirectory = () => {
   const handleSort = (sortOption: SortOption) => {
     setCurrentSort(sortOption);
     setShowSortOptions(false);
+  };
+
+  // Handle shortlisted toggle and always go back to listings view
+  const handleShortlistedToggle = () => {
+    setShowOnlyShortlisted(!showOnlyShortlisted);
+    setActiveView('listings');
   };
 
   const renderStars = (rating: number) => {
@@ -386,7 +393,7 @@ const DesignerDirectory = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowOnlyShortlisted(!showOnlyShortlisted)}
+              onClick={handleShortlistedToggle}
               className={`flex flex-col items-center gap-1 h-auto py-2 ${showOnlyShortlisted ? 'text-blue-600' : ''}`}
             >
               <Bookmark className="w-5 h-5" />
@@ -427,10 +434,10 @@ const DesignerDirectory = () => {
 
       {/* Content Area - Render different views based on activeView state */}
       <div className="max-w-md mx-auto px-4 py-6">
-        {activeView === 'listings' && <ListingsView />}
-        {activeView === 'schedule' && <ScheduleView />}
-        {activeView === 'gallery' && <GalleryView />}
-        {activeView === 'map' && <MapView />}
+        {(activeView === 'listings' || showOnlyShortlisted) && <ListingsView />}
+        {activeView === 'schedule' && !showOnlyShortlisted && <ScheduleView />}
+        {activeView === 'gallery' && !showOnlyShortlisted && <GalleryView />}
+        {activeView === 'map' && !showOnlyShortlisted && <MapView />}
       </div>
 
       {/* Undo Snackbar */}
