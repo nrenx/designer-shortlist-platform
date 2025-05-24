@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { 
-  Calendar as CalendarIcon,
   ImageIcon,
   MapPin,
   ArrowUpDown,
@@ -19,7 +17,8 @@ import {
   Star,
   Phone,
   X,
-  Undo2
+  Undo2,
+  Contact
 } from 'lucide-react';
 
 interface Designer {
@@ -163,6 +162,12 @@ const DesignerDirectory = () => {
     setActiveView('listings');
   };
 
+  // Handle contacts button click - go to home page view
+  const handleContactsClick = () => {
+    setActiveView('listings');
+    setShowOnlyShortlisted(false);
+  };
+
   const renderStars = (rating: number) => {
     const stars = [];
     const fullStars = Math.floor(rating);
@@ -185,16 +190,6 @@ const DesignerDirectory = () => {
   };
 
   // Components for different views
-  const ScheduleView = () => (
-    <div className="flex flex-col items-center justify-center py-16">
-      <CalendarIcon className="w-16 h-16 text-gray-300 mb-4" />
-      <h2 className="text-xl font-semibold mb-2">Scheduling</h2>
-      <p className="text-gray-600 text-center max-w-sm">
-        Booking functionality coming soon. Stay tuned!
-      </p>
-    </div>
-  );
-
   const GalleryView = () => (
     <div className="py-8">
       <h2 className="text-xl font-semibold mb-4 text-center">Project Gallery</h2>
@@ -363,11 +358,11 @@ const DesignerDirectory = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setActiveView('schedule')}
-              className={`flex flex-col items-center gap-1 h-auto py-2 ${activeView === 'schedule' ? 'text-amber-600' : ''}`}
+              onClick={handleContactsClick}
+              className={`flex flex-col items-center gap-1 h-auto py-2 ${activeView === 'contacts' ? 'text-amber-600' : ''}`}
             >
-              <CalendarIcon className="w-5 h-5" />
-              <span className="text-xs">Schedule</span>
+              <Contact className="w-5 h-5" />
+              <span className="text-xs">Contacts</span>
             </Button>
             
             <Button
@@ -435,7 +430,6 @@ const DesignerDirectory = () => {
       {/* Content Area - Render different views based on activeView state */}
       <div className="max-w-md mx-auto px-4 py-6">
         {(activeView === 'listings' || showOnlyShortlisted) && <ListingsView />}
-        {activeView === 'schedule' && !showOnlyShortlisted && <ScheduleView />}
         {activeView === 'gallery' && !showOnlyShortlisted && <GalleryView />}
         {activeView === 'map' && !showOnlyShortlisted && <MapView />}
       </div>
