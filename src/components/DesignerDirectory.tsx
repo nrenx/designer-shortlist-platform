@@ -43,7 +43,7 @@ interface SortOption {
 }
 
 // Define view types
-type ViewType = 'listings' | 'schedule' | 'gallery' | 'map';
+type ViewType = 'listings' | 'contacts' | 'gallery' | 'map';
 
 const DesignerDirectory = () => {
   const [designers, setDesigners] = useState<Designer[]>([]);
