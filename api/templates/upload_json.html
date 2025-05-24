@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+
+{% block title %}Upload JSON - EmptyCup Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-upload text-primary"></i> Upload JSON File
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-file-upload"></i> Upload Designers JSON
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="file" class="form-label">Select JSON File</label>
+                        <input type="file" class="form-control" id="file" name="file" accept=".json" required>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i> 
+                            Upload a JSON file containing an array of designer objects. Maximum file size: 16MB.
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-lightbulb"></i> File Format Requirements:</h6>
+                        <ul class="mb-0">
+                            <li>File must be in JSON format (.json extension)</li>
+                            <li>Must contain an array of designer objects</li>
+                            <li>Each designer must have all required fields</li>
+                            <li>Specialties and portfolio must be arrays</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Upload & Process
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Panel -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-code"></i> JSON Format Example
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="small">Your JSON file should look like this:</p>
+                <pre class="bg-light p-3 rounded small"><code>[
+  {
+    "name": "Studio Name",
+    "rating": 4.5,
+    "description": "Studio description",
+    "projects": 25,
+    "experience": 6,
+    "price_range": "$$",
+    "phone1": "+91 - 123456789",
+    "phone2": "+91 - 123456790",
+    "location": "City Name",
+    "specialties": ["Modern", "Residential"],
+    "portfolio": [
+      "https://example.com/image1.jpg",
+      "https://example.com/image2.jpg"
+    ]
+  },
+  {
+    "name": "Another Studio",
+    "rating": 4.2,
+    ...
+  }
+]</code></pre>
+            </div>
+        </div>
+        
+        <!-- Download Sample -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-download"></i> Sample File
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="small">Download a sample JSON file to see the correct format:</p>
+                <button type="button" class="btn btn-outline-success btn-sm" onclick="downloadSample()">
+                    <i class="fas fa-download"></i> Download Sample JSON
+                </button>
+            </div>
+        </div>
+        
+        <!-- Validation Rules -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-check-circle"></i> Validation Rules
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Required Fields:</h6>
+                <ul class="small">
+                    <li><strong>name:</strong> String (1-100 chars)</li>
+                    <li><strong>rating:</strong> Number (1.0-5.0)</li>
+                    <li><strong>description:</strong> String (10-500 chars)</li>
+                    <li><strong>projects:</strong> Integer (≥ 0)</li>
+                    <li><strong>experience:</strong> Integer (≥ 0)</li>
+                    <li><strong>price_range:</strong> "$", "$$", or "$$$"</li>
+                    <li><strong>phone1, phone2:</strong> String</li>
+                    <li><strong>location:</strong> String (1-100 chars)</li>
+                    <li><strong>specialties:</strong> Array of strings</li>
+                    <li><strong>portfolio:</strong> Array of URLs</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Status -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle"></i> What Happens After Upload?
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-file-upload fa-2x text-primary mb-2"></i>
+                        <h6>1. File Upload</h6>
+                        <p class="small text-muted">Your JSON file is uploaded and parsed</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-check-double fa-2x text-success mb-2"></i>
+                        <h6>2. Validation</h6>
+                        <p class="small text-muted">Each designer record is validated</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-database fa-2x text-info mb-2"></i>
+                        <h6>3. Database Insert</h6>
+                        <p class="small text-muted">Valid records are added to database</p>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
+                        <h6>4. Results</h6>
+                        <p class="small text-muted">Success/error summary is displayed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function downloadSample() {
+    const sampleData = [
+        {
+            "name": "Modern Spaces Studio",
+            "rating": 4.3,
+            "description": "Contemporary design studio specializing in modern residential and commercial spaces with sustainable practices.",
+            "projects": 28,
+            "experience": 4,
+            "price_range": "$$",
+            "phone1": "+91 - 987654321",
+            "phone2": "+91 - 987654322",
+            "location": "Mumbai",
+            "specialties": ["Modern", "Contemporary", "Sustainable", "Residential"],
+            "portfolio": [
+                "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400",
+                "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400",
+                "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400"
+            ]
+        },
+        {
+            "name": "Luxury Interiors Co.",
+            "rating": 4.8,
+            "description": "High-end luxury interior design firm with expertise in premium residential and commercial projects.",
+            "projects": 15,
+            "experience": 7,
+            "price_range": "$$$",
+            "phone1": "+91 - 876543210",
+            "phone2": "+91 - 876543211",
+            "location": "Delhi",
+            "specialties": ["Luxury", "High-end", "Premium", "Commercial"],
+            "portfolio": [
+                "https://images.unsplash.com/photo-1618221195710-dd6b41faaea8?w=400",
+                "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400"
+            ]
+        }
+    ];
+    
+    const dataStr = JSON.stringify(sampleData, null, 2);
+    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'sample_designers.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

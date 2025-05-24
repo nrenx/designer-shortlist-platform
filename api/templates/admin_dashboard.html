@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - EmptyCup Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-tachometer-alt text-primary"></i> Admin Dashboard
+        </h1>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ designer_count }}</h4>
+                        <p class="card-text">Total Designers</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">Active</h4>
+                        <p class="card-text">API Status</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">SQLite</h4>
+                        <p class="card-text">Database</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-database fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">v1.0</h4>
+                        <p class="card-text">API Version</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-code fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt"></i> Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('add_designer_form') }}" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-plus"></i> Add New Designer
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('upload_json') }}" class="btn btn-success btn-lg w-100">
+                            <i class="fas fa-upload"></i> Upload JSON File
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{{ url_for('designers_list') }}" class="btn btn-info btn-lg w-100">
+                            <i class="fas fa-list"></i> View All Designers
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Designers -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clock"></i> Recent Designers
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_designers %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Rating</th>
+                                    <th>Location</th>
+                                    <th>Added</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for designer in recent_designers %}
+                                <tr>
+                                    <td><span class="badge bg-primary">#{{ designer.id }}</span></td>
+                                    <td>
+                                        <strong>{{ designer.name }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="text-warning">
+                                            {% for i in range(designer.rating|int) %}
+                                                <i class="fas fa-star"></i>
+                                            {% endfor %}
+                                            {% if designer.rating % 1 != 0 %}
+                                                <i class="fas fa-star-half-alt"></i>
+                                            {% endif %}
+                                        </span>
+                                        <small class="text-muted">({{ designer.rating }})</small>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-map-marker-alt text-muted"></i> {{ designer.location }}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {% if designer.created_at %}
+                                                {{ designer.created_at.strftime('%Y-%m-%d %H:%M') if designer.created_at.strftime else 'Recently' }}
+                                            {% else %}
+                                                Recently
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <a href="{{ url_for('designers_list') }}" class="btn btn-outline-primary">
+                            View All Designers <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No designers found</h5>
+                        <p class="text-muted">Start by adding your first designer!</p>
+                        <a href="{{ url_for('add_designer_form') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Designer
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- API Links -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-link"></i> API Endpoints
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Frontend Application</h6>
+                        <a href="http://localhost:8080" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-external-link-alt"></i> Open Frontend
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>API Endpoints</h6>
+                        <a href="/api/health" target="_blank" class="btn btn-outline-success btn-sm me-2">
+                            <i class="fas fa-heartbeat"></i> Health
+                        </a>
+                        <a href="/api/designers" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-code"></i> Designers API
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

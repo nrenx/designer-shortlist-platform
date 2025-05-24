@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}All Designers - EmptyCup Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <i class="fas fa-list text-primary"></i> All Designers
+                <span class="badge bg-primary">{{ designers|length }}</span>
+            </h1>
+            <div>
+                <a href="{{ url_for('add_designer_form') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Designer
+                </a>
+                <a href="{{ url_for('upload_json') }}" class="btn btn-success">
+                    <i class="fas fa-upload"></i> Upload JSON
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if designers %}
+<div class="row">
+    {% for designer in designers %}
+    <div class="col-lg-6 col-xl-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="card-title mb-0">
+                    <span class="badge bg-primary me-2">#{{ designer.id }}</span>
+                    {{ designer.name }}
+                </h6>
+                <div class="text-warning">
+                    {% for i in range(designer.rating|int) %}
+                        <i class="fas fa-star"></i>
+                    {% endfor %}
+                    {% if designer.rating % 1 != 0 %}
+                        <i class="fas fa-star-half-alt"></i>
+                    {% endif %}
+                    <small class="text-muted">({{ designer.rating }})</small>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text small">{{ designer.description[:100] }}{% if designer.description|length > 100 %}...{% endif %}</p>
+
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <div class="border-end">
+                            <strong class="d-block">{{ designer.projects }}</strong>
+                            <small class="text-muted">Projects</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border-end">
+                            <strong class="d-block">{{ designer.experience }}</strong>
+                            <small class="text-muted">Years</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <strong class="d-block">{{ designer.price_range }}</strong>
+                        <small class="text-muted">Price</small>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <i class="fas fa-map-marker-alt"></i> {{ designer.location }}
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">Specialties:</small>
+                    {% for specialty in designer.specialties[:3] %}
+                        <span class="badge bg-light text-dark me-1">{{ specialty }}</span>
+                    {% endfor %}
+                    {% if designer.specialties|length > 3 %}
+                        <span class="badge bg-secondary">+{{ designer.specialties|length - 3 }}</span>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">Contact:</small>
+                    <small>
+                        <i class="fas fa-phone"></i> {{ designer.phone1 }}<br>
+                        <i class="fas fa-phone"></i> {{ designer.phone2 }}
+                    </small>
+                </div>
+
+                {% if designer.portfolio %}
+                <div class="mb-3">
+                    <small class="text-muted d-block">Portfolio:</small>
+                    <div class="d-flex">
+                        {% for image in designer.portfolio[:3] %}
+                        <img src="{{ image }}" alt="Portfolio" class="rounded me-1" style="width: 40px; height: 40px; object-fit: cover;">
+                        {% endfor %}
+                        {% if designer.portfolio|length > 3 %}
+                        <div class="d-flex align-items-center justify-content-center bg-light rounded" style="width: 40px; height: 40px;">
+                            <small class="text-muted">+{{ designer.portfolio|length - 3 }}</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        {% if designer.created_at %}
+                            Added: {{ designer.created_at.strftime('%Y-%m-%d') if designer.created_at.strftime else 'Recently' }}
+                        {% else %}
+                            Recently added
+                        {% endif %}
+                    </small>
+                    <div>
+                        <button class="btn btn-outline-primary btn-sm me-1" onclick="viewDetails({{ designer.id }})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ designer.id }}, '{{ designer.name }}')">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination would go here if needed -->
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <p class="text-muted">Showing {{ designers|length }} designers</p>
+    </div>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-users fa-4x text-muted mb-4"></i>
+                <h3 class="text-muted">No Designers Found</h3>
+                <p class="text-muted mb-4">Start building your designer database by adding your first designer.</p>
+                <div>
+                    <a href="{{ url_for('add_designer_form') }}" class="btn btn-primary me-2">
+                        <i class="fas fa-plus"></i> Add First Designer
+                    </a>
+                    <a href="{{ url_for('upload_json') }}" class="btn btn-success">
+                        <i class="fas fa-upload"></i> Upload JSON File
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Designer Details Modal -->
+<div class="modal fade" id="designerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Designer Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="editDesignerBtn" class="btn btn-primary">
+                    <i class="fas fa-edit"></i> Edit Designer
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning"></i> Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the designer <strong id="deleteDesignerName"></strong>?</p>
+                <div class="alert alert-warning">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Warning:</strong> This action will also delete:
+                    <ul class="mb-0 mt-2">
+                        <li>All shortlist entries for this designer</li>
+                        <li>All reports related to this designer</li>
+                    </ul>
+                    <p class="mb-0 mt-2"><strong>This action cannot be undone!</strong></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete Designer
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewDetails(designerId) {
+    // Fetch designer details via API
+    fetch(`/api/designers/${designerId}`)
+        .then(response => response.json())
+        .then(data => {
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Basic Information</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Name:</strong></td><td>${data.name}</td></tr>
+                            <tr><td><strong>Rating:</strong></td><td>${data.rating} ⭐</td></tr>
+                            <tr><td><strong>Location:</strong></td><td>${data.location}</td></tr>
+                            <tr><td><strong>Price Range:</strong></td><td>${data.priceRange}</td></tr>
+                        </table>
+
+                        <h6>Experience</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Projects:</strong></td><td>${data.projects}</td></tr>
+                            <tr><td><strong>Experience:</strong></td><td>${data.experience} years</td></tr>
+                        </table>
+
+                        <h6>Contact</h6>
+                        <table class="table table-sm">
+                            <tr><td><strong>Phone 1:</strong></td><td>${data.phone1}</td></tr>
+                            <tr><td><strong>Phone 2:</strong></td><td>${data.phone2}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Description</h6>
+                        <p class="small">${data.description}</p>
+
+                        <h6>Specialties</h6>
+                        <div class="mb-3">
+                            ${data.specialties.map(s => `<span class="badge bg-primary me-1">${s}</span>`).join('')}
+                        </div>
+
+                        <h6>Portfolio</h6>
+                        <div class="row">
+                            ${data.portfolio.map(img => `
+                                <div class="col-4 mb-2">
+                                    <img src="${img}" alt="Portfolio" class="img-fluid rounded" style="height: 80px; object-fit: cover; width: 100%;">
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Update edit button
+            document.getElementById('editDesignerBtn').href = `/edit-designer/${designerId}`;
+
+            // Show modal
+            new bootstrap.Modal(document.getElementById('designerModal')).show();
+        })
+        .catch(error => {
+            console.error('Error fetching designer details:', error);
+            alert('Error loading designer details');
+        });
+}
+
+function confirmDelete(designerId, designerName) {
+    // Set the designer name in the modal
+    document.getElementById('deleteDesignerName').textContent = designerName;
+
+    // Set the form action to the delete URL
+    document.getElementById('deleteForm').action = `/delete-designer/${designerId}`;
+
+    // Show the modal
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}

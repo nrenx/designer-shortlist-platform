@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Add Designer - EmptyCup Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-plus text-primary"></i> Add New Designer
+        </h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-plus"></i> Designer Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <!-- Basic Information -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Basic Information</h6>
+                            
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Studio/Designer Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="{{ form_data.name if form_data else '' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="rating" class="form-label">Rating (1.0 - 5.0) *</label>
+                                <input type="number" class="form-control" id="rating" name="rating" 
+                                       min="1.0" max="5.0" step="0.1"
+                                       value="{{ form_data.rating if form_data else '' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location *</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       value="{{ form_data.location if form_data else '' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="price_range" class="form-label">Price Range *</label>
+                                <select class="form-select" id="price_range" name="price_range" required>
+                                    <option value="">Select price range</option>
+                                    <option value="$" {{ 'selected' if form_data and form_data.price_range == '$' else '' }}>$ - Budget Friendly</option>
+                                    <option value="$$" {{ 'selected' if form_data and form_data.price_range == '$$' else '' }}>$$ - Mid Range</option>
+                                    <option value="$$$" {{ 'selected' if form_data and form_data.price_range == '$$$' else '' }}>$$$ - Premium</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- Experience & Contact -->
+                        <div class="col-md-6">
+                            <h6 class="text-muted mb-3">Experience & Contact</h6>
+                            
+                            <div class="mb-3">
+                                <label for="experience" class="form-label">Years of Experience *</label>
+                                <input type="number" class="form-control" id="experience" name="experience" 
+                                       min="0" value="{{ form_data.experience if form_data else '' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="projects" class="form-label">Number of Projects *</label>
+                                <input type="number" class="form-control" id="projects" name="projects" 
+                                       min="0" value="{{ form_data.projects if form_data else '' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="phone1" class="form-label">Primary Phone *</label>
+                                <input type="text" class="form-control" id="phone1" name="phone1" 
+                                       value="{{ form_data.phone1 if form_data else '' }}" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="phone2" class="form-label">Secondary Phone *</label>
+                                <input type="text" class="form-control" id="phone2" name="phone2" 
+                                       value="{{ form_data.phone2 if form_data else '' }}" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description *</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" required>{{ form_data.description if form_data else '' }}</textarea>
+                        <div class="form-text">Brief description of the designer/studio and their style.</div>
+                    </div>
+                    
+                    <!-- Specialties -->
+                    <div class="mb-3">
+                        <label for="specialties" class="form-label">Specialties *</label>
+                        <input type="text" class="form-control" id="specialties" name="specialties" 
+                               value="{{ form_data.specialties if form_data else '' }}" required>
+                        <div class="form-text">Comma-separated list (e.g., Modern, Residential, Commercial, Luxury)</div>
+                    </div>
+                    
+                    <!-- Portfolio URLs -->
+                    <div class="mb-3">
+                        <label for="portfolio" class="form-label">Portfolio Image URLs *</label>
+                        <textarea class="form-control" id="portfolio" name="portfolio" rows="3" required>{{ form_data.portfolio if form_data else '' }}</textarea>
+                        <div class="form-text">Comma-separated image URLs. Use high-quality images (400px+ width recommended).</div>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Add Designer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Help Panel -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle"></i> Help & Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Field Guidelines:</h6>
+                <ul class="small">
+                    <li><strong>Rating:</strong> Use decimal values (e.g., 4.5)</li>
+                    <li><strong>Price Range:</strong> $ = Budget, $$ = Mid-range, $$$ = Premium</li>
+                    <li><strong>Specialties:</strong> Use relevant keywords like "Modern", "Traditional", "Residential"</li>
+                    <li><strong>Portfolio:</strong> Use direct image URLs, preferably HTTPS</li>
+                </ul>
+                
+                <h6 class="mt-3">Sample Specialties:</h6>
+                <div class="small">
+                    <span class="badge bg-light text-dark me-1">Modern</span>
+                    <span class="badge bg-light text-dark me-1">Traditional</span>
+                    <span class="badge bg-light text-dark me-1">Residential</span>
+                    <span class="badge bg-light text-dark me-1">Commercial</span>
+                    <span class="badge bg-light text-dark me-1">Luxury</span>
+                    <span class="badge bg-light text-dark me-1">Minimalist</span>
+                </div>
+                
+                <h6 class="mt-3">Sample Portfolio URLs:</h6>
+                <div class="small text-muted">
+                    <code>https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400,<br>
+                    https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400</code>
+                </div>
+                
+                <div class="mt-3">
+                    <a href="{{ url_for('upload_json') }}" class="btn btn-outline-success btn-sm">
+                        <i class="fas fa-upload"></i> Bulk Upload Instead
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quick Fill Button -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6>Quick Test Data</h6>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="fillSampleData()">
+                    <i class="fas fa-magic"></i> Fill Sample Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fillSampleData() {
+    document.getElementById('name').value = 'Sample Design Studio';
+    document.getElementById('rating').value = '4.2';
+    document.getElementById('location').value = 'Mumbai';
+    document.getElementById('price_range').value = '$$';
+    document.getElementById('experience').value = '5';
+    document.getElementById('projects').value = '25';
+    document.getElementById('phone1').value = '+91 - 9876543210';
+    document.getElementById('phone2').value = '+91 - 9876543211';
+    document.getElementById('description').value = 'A modern design studio specializing in contemporary residential and commercial interiors with a focus on sustainable design practices.';
+    document.getElementById('specialties').value = 'Modern, Contemporary, Sustainable, Residential';
+    document.getElementById('portfolio').value = 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400, https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400, https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400';
+}
+</script>
+{% endblock %}

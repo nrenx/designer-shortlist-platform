@@ -3,8 +3,8 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { toast } from '@/hooks/use-toast';
-import { 
+import { useToast } from '@/hooks/use-toast';
+import {
   ImageIcon,
   MapPin,
   ArrowUpDown,
@@ -63,6 +63,11 @@ const DesignerDirectory = () => {
   });
   // New state for active view
   const [activeView, setActiveView] = useState<ViewType>('listings');
+  // Report form state
+  const [reportReason, setReportReason] = useState('Inappropriate content');
+  const [reportDescription, setReportDescription] = useState('');
+  const [apiError, setApiError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const sortOptions: SortOption[] = [
     { label: 'Sort by Experience', key: 'experience', order: 'desc' },
@@ -71,6 +76,9 @@ const DesignerDirectory = () => {
   ];
 
   useEffect(() => {
+    console.log('DesignerDirectory component mounted, loading designers...');
+    console.log('Environment in DesignerDirectory:', import.meta.env);
+    console.log('VITE_API_BASE_URL in DesignerDirectory:', import.meta.env.VITE_API_BASE_URL);
     loadDesigners();
   }, []);
 
@@ -78,21 +86,55 @@ const DesignerDirectory = () => {
     applyFilters();
   }, [designers, shortlistedIds, hiddenIds, showOnlyShortlisted, currentSort]);
 
-  const loadDesigners = async () => {
+  const loadDesigners = async (retryCount = 0) => {
     try {
-      const response = await fetch('/src/data/listings.json');
+      setApiError(null); // Clear previous errors
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const response = await fetch(`${apiUrl}/designers`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status} ${response.statusText}`);
+      }
+
       const data = await response.json();
+      console.log('Loaded designers:', data.length, 'designers');
+      console.log('First designer:', data[0]);
       setDesigners(data);
+      setApiError(null);
     } catch (error) {
       console.error('Error loading designers:', error);
-      // Fallback data if JSON loading fails
-      setDesigners([]);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+
+      // Retry up to 3 times with exponential backoff
+      if (retryCount < 2 && !errorMessage.includes('aborted')) {
+        console.log(`Retrying in ${(retryCount + 1) * 1000}ms...`);
+        setTimeout(() => loadDesigners(retryCount + 1), (retryCount + 1) * 1000);
+        setApiError(`Connection failed, retrying... (attempt ${retryCount + 2}/3)`);
+      } else {
+        setApiError(errorMessage);
+        setDesigners([]);
+      }
     }
   };
 
   const applyFilters = () => {
     let filtered = designers.filter(designer => !hiddenIds.has(designer.id));
-    
+
     if (showOnlyShortlisted) {
       filtered = filtered.filter(designer => shortlistedIds.has(designer.id));
     }
@@ -101,32 +143,63 @@ const DesignerDirectory = () => {
     filtered = [...filtered].sort((a, b) => {
       const aValue = a[currentSort.key];
       const bValue = b[currentSort.key];
-      
+
       if (currentSort.key === 'priceRange') {
         const priceOrder = { '$': 1, '$$': 2, '$$$': 3 };
         const aPrice = priceOrder[aValue as keyof typeof priceOrder] || 0;
         const bPrice = priceOrder[bValue as keyof typeof priceOrder] || 0;
         return currentSort.order === 'asc' ? aPrice - bPrice : bPrice - aPrice;
       }
-      
+
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         return currentSort.order === 'asc' ? aValue - bValue : bValue - aValue;
       }
-      
+
       return 0;
     });
 
     setFilteredDesigners(filtered);
   };
 
-  const toggleShortlist = (designerId: number) => {
-    const newShortlisted = new Set(shortlistedIds);
-    if (newShortlisted.has(designerId)) {
-      newShortlisted.delete(designerId);
-    } else {
-      newShortlisted.add(designerId);
+  const toggleShortlist = async (designerId: number) => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${apiUrl}/designers/${designerId}/shortlist`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_session: 'default_session' // In a real app, this would be a user ID or session ID
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Update local state based on API response
+      const newShortlisted = new Set(shortlistedIds);
+      if (result.shortlisted) {
+        newShortlisted.add(designerId);
+      } else {
+        newShortlisted.delete(designerId);
+      }
+      setShortlistedIds(newShortlisted);
+
+    } catch (error) {
+      console.error('Error toggling shortlist:', error);
+      // Fallback to local state update if API fails
+      const newShortlisted = new Set(shortlistedIds);
+      if (newShortlisted.has(designerId)) {
+        newShortlisted.delete(designerId);
+      } else {
+        newShortlisted.add(designerId);
+      }
+      setShortlistedIds(newShortlisted);
     }
-    setShortlistedIds(newShortlisted);
   };
 
   const hideDesigner = (designerId: number) => {
@@ -134,7 +207,7 @@ const DesignerDirectory = () => {
     newHidden.add(designerId);
     setHiddenIds(newHidden);
     setRecentlyHidden(designerId);
-    
+
     setTimeout(() => {
       if (recentlyHidden === designerId) {
         setRecentlyHidden(null);
@@ -154,6 +227,53 @@ const DesignerDirectory = () => {
   const handleSort = (sortOption: SortOption) => {
     setCurrentSort(sortOption);
     setShowSortOptions(false);
+  };
+
+  const submitReport = async () => {
+    if (!selectedDesigner) return;
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
+      const response = await fetch(`${apiUrl}/designers/${selectedDesigner.id}/report`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reason: reportReason,
+          description: reportDescription,
+          user_session: 'default_session'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      setShowReportModal(false);
+      setReportReason('Inappropriate content');
+      setReportDescription('');
+
+      toast.toast({
+        title: "Report submitted",
+        description: "Thank you for your feedback. We'll review this report.",
+      });
+
+    } catch (error) {
+      console.error('Error submitting report:', error);
+
+      // Still show success message even if API fails
+      setShowReportModal(false);
+      setReportReason('Inappropriate content');
+      setReportDescription('');
+
+      toast.toast({
+        title: "Report submitted",
+        description: "Thank you for your feedback. We'll review this report.",
+      });
+    }
   };
 
   // Handle shortlisted toggle and always go back to listings view
@@ -190,31 +310,39 @@ const DesignerDirectory = () => {
   };
 
   // Components for different views
-  const GalleryView = () => (
-    <div className="py-8">
-      <h2 className="text-xl font-semibold mb-4 text-center">Project Gallery</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {[
-          "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400",
-          "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=400",
-          "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400",
-          "https://images.unsplash.com/photo-1618221195710-dd6b41faaea8?w=400"
-        ].map((img, idx) => (
-          <div key={idx} className="rounded-lg overflow-hidden shadow-md">
-            <img
-              src={img}
-              alt={`Portfolio ${idx + 1}`}
-              className="w-full h-48 object-cover"
-            />
-            <div className="p-3 bg-white">
-              <p className="text-sm font-medium">Design Project {idx + 1}</p>
-              <p className="text-xs text-gray-500">Interior Design</p>
+  const GalleryView = () => {
+    // Get portfolio images from all designers
+    const galleryImages = designers
+      .flatMap(designer => designer.portfolio || [])
+      .slice(0, 8); // Show up to 8 images
+
+    return (
+      <div className="py-8">
+        <h2 className="text-xl font-semibold mb-4 text-center">Project Gallery</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {galleryImages.length > 0 ? (
+            galleryImages.map((img, idx) => (
+              <div key={idx} className="rounded-lg overflow-hidden shadow-md">
+                <img
+                  src={img}
+                  alt={`Portfolio ${idx + 1}`}
+                  className="w-full h-48 object-cover"
+                />
+                <div className="p-3 bg-white">
+                  <p className="text-sm font-medium">Design Project {idx + 1}</p>
+                  <p className="text-xs text-gray-500">Interior Design</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-2 text-center py-8">
+              <p className="text-gray-500">No portfolio images available</p>
             </div>
-          </div>
-        ))}
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const MapView = () => (
     <div className="flex flex-col items-center justify-center py-16">
@@ -285,7 +413,7 @@ const DesignerDirectory = () => {
                 <EyeOff className="w-4 h-4" />
                 <span className="ml-1 text-xs">Hide</span>
               </Button>
-              
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -320,6 +448,14 @@ const DesignerDirectory = () => {
       {filteredDesigners.length === 0 && (
         <div className="text-center py-8">
           <p className="text-gray-500">No designers found</p>
+          <p className="text-xs text-gray-400 mt-2">
+            Debug: designers={designers.length}, filtered={filteredDesigners.length}
+          </p>
+          {apiError && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-600">API Error: {apiError}</p>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -330,13 +466,13 @@ const DesignerDirectory = () => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
-          <div 
-            className="flex items-center gap-3 cursor-pointer" 
+          <div
+            className="flex items-center gap-3 cursor-pointer"
             onClick={() => setActiveView('listings')}
           >
-            <img 
-              src="/lovable-uploads/de251bab-7a07-4dd1-ab51-268854eca36e.png" 
-              alt="EmptyCup" 
+            <img
+              src="/lovable-uploads/de251bab-7a07-4dd1-ab51-268854eca36e.png"
+              alt="EmptyCup"
               className="w-8 h-8"
             />
             <h1 className="text-xl font-semibold text-gray-900">EmptyCup</h1>
@@ -364,7 +500,7 @@ const DesignerDirectory = () => {
               <Contact className="w-5 h-5" />
               <span className="text-xs">Contacts</span>
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -374,7 +510,7 @@ const DesignerDirectory = () => {
               <ImageIcon className="w-5 h-5" />
               <span className="text-xs">Gallery</span>
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -384,7 +520,7 @@ const DesignerDirectory = () => {
               <MapPin className="w-5 h-5" />
               <span className="text-xs">Map</span>
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -394,7 +530,7 @@ const DesignerDirectory = () => {
               <Bookmark className="w-5 h-5" />
               <span className="text-xs">Shortlisted</span>
             </Button>
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -464,9 +600,9 @@ const DesignerDirectory = () => {
                 {renderStars(selectedDesigner.rating)}
                 <span className="ml-2 text-sm text-gray-600">{selectedDesigner.rating}/5</span>
               </div>
-              
+
               <p className="text-gray-700">{selectedDesigner.description}</p>
-              
+
               <div className="grid grid-cols-3 gap-4 py-4 border-y">
                 <div className="text-center">
                   <div className="text-lg font-bold">{selectedDesigner.projects}</div>
@@ -524,31 +660,31 @@ const DesignerDirectory = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-2">Reason for report</label>
-              <select className="w-full p-2 border rounded-md">
+              <select
+                className="w-full p-2 border rounded-md"
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+              >
                 <option>Inappropriate content</option>
                 <option>Fake profile</option>
                 <option>Spam</option>
                 <option>Other</option>
               </select>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium mb-2">Describe the issue</label>
-              <textarea 
+              <textarea
                 className="w-full p-2 border rounded-md h-20 resize-none"
                 placeholder="Please provide more details..."
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
               />
             </div>
-            
-            <Button 
+
+            <Button
               className="w-full"
-              onClick={() => {
-                setShowReportModal(false);
-                toast({
-                  title: "Report submitted",
-                  description: "Thank you for your feedback. We'll review this report.",
-                });
-              }}
+              onClick={submitReport}
             >
               Submit Report
             </Button>

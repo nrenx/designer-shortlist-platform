@@ -1,47 +1,47 @@
 
-version: '3.8'
-
 services:
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=http://localhost:5001/api
+        - NODE_ENV=production
     ports:
       - "8080:8080"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      - VITE_API_BASE_URL=http://localhost:5000/api
-    command: npm run dev -- --host 0.0.0.0 --port 8080
-    
-  # Future Flask API service (commented out for now)
-  # api:
-  #   build:
-  #     context: ./api
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5000:5000"
-  #   environment:
-  #     - FLASK_ENV=development
-  #     - DATABASE_URL=sqlite:///designers.db
-  #   volumes:
-  #     - ./api:/app
-  #   depends_on:
-  #     - db
-  
-  # Database service (for future use)
-  # db:
-  #   image: postgres:13-alpine
-  #   environment:
-  #     - POSTGRES_DB=emptycup
-  #     - POSTGRES_USER=admin
-  #     - POSTGRES_PASSWORD=password
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
 
-# volumes:
-#   postgres_data:
+  # Flask API service
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://postgres:password@db:5432/emptycup
+      - PORT=5001
+    depends_on:
+      db:
+        condition: service_healthy
+    command: python app.py
+
+  # Database service
+  db:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_DB=emptycup
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d emptycup"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

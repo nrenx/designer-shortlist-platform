@@ -1,258 +1,228 @@
+# 🏠 EmptyCup Designer Shortlist Platform
 
-# Project Name: Full Stack Assignment
+📐 **Design Specification**
+- Pixel-perfect, mobile-first layout (320px–480px) matching the provided Figma design file.
+- Use same fonts and icons downloaded directly from Figma.
 
-## Objective
+**Find and connect with the best interior designers for your project.**
 
-This project is a mobile-responsive web application that lists active interior designers from the EmptyCup platform. The application features a clean, modern interface that allows users to browse interior designers, shortlist their favorites, and interact with various filtering and sorting options. The design is based on a Figma mockup and implements both frontend functionality and backend API integration capabilities.
+A mobile-first web application that lists all interior designers active on EmptyCup's platform. Homeowners and businesses can browse, filter, and shortlist designers to find the perfect match for their interior design projects. Built following Figma design specifications with pixel-perfect styling and full-stack functionality.
 
-## Technologies Used
+## 📖 Table of Contents
+- [Quick Start](#-quick-start)
+  - [Option 1: Run with Docker](#option-1-run-with-docker-easiest)
+  - [Option 2: Run Locally](#option-2-run-locally)
+- [⚙️ Configuration](#️-configuration)
+- [✨ Core Features](#️-core-features-assignment-requirements)
+- [📁 Project Structure](#️-project-structure)
+- [🔧 For Administrators](#🔧-for-administrators)
+- [🛠️ Backend API](#️-backend-api)
+- [🗄️ Database Schema](#️-database-schema)
+- [🌐 Deploy to the Internet](#️-deploy-to-the-internet)
+- [💡 Built With](#️-built-with)
+- [📞 Support](#️-support)
 
-### Frontend
-- **React** with TypeScript for component-based architecture
-- **Tailwind CSS** for responsive styling and mobile-first design
-- **Shadcn/ui** for consistent UI components
-- **Lucide React** for modern icons
-- **Mobile-responsive design** optimized for mobile devices
-- **Figma reference** for pixel-perfect design implementation
+## ⚙️ Configuration
+- **VITE_API_BASE_URL** (optional): Override the default backend API URL (default `http://localhost:5001/api`)
 
-### Backend
-- **Static JSON** data source (ready for Flask API integration)
-- **RESTful API structure** prepared for future Flask implementation
-- **Docker** containerization for local development
+## 🚀 Quick Start
 
-### Development & Deployment
-- **Docker** with docker-compose for local development setup
-- **Vite** for fast development and building
-- **TypeScript** for type safety and better development experience
-
-## Features
-
-### Core Functionality
-- **Designer Listings**: Browse interior designers with detailed information
-- **Shortlisting**: Toggle shortlist status for favorite designers
-- **Filtering**: View all designers or only shortlisted ones
-- **Sorting**: Sort by experience, price, or number of projects
-- **Hide/Show**: Hide designers with undo functionality
-
-### Interactive Features
-- **Schedule Button**: Shows upcoming booking functionality modal
-- **Gallery Button**: Displays sample portfolio images
-- **Map Button**: Shows location services placeholder
-- **Details Modal**: Full designer information with contact details
-- **Report System**: Report inappropriate content with form submission
-
-### Mobile-Responsive Design
-- Optimized for mobile devices (320px to 480px)
-- Touch-friendly interfaces
-- Responsive grid layouts
-- Mobile-first approach
-
-## Project Structure
-
-```
-src/
-├── components/
-│   ├── ui/                 # Shadcn UI components
-│   └── DesignerDirectory.tsx # Main application component
-├── data/
-│   └── listings.json       # Designer data (API simulation)
-├── pages/
-│   └── Index.tsx           # Main page component
-├── hooks/
-│   └── use-toast.ts        # Toast notification hook
-└── lib/
-    └── utils.ts            # Utility functions
-```
-
-## Setup Instructions
-
-### Prerequisites
-- Node.js (v18 or higher)
-- Docker and Docker Compose
-- Git
-
-### Local Development Setup
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd full-stack-assignment
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
-   The application will be available at `http://localhost:8080`
-
-### Docker Development Setup
-
-1. **Build and run with Docker Compose**
-   ```bash
-   docker-compose up --build
-   ```
-
-2. **Access the application**
-   - Frontend: `http://localhost:8080`
-   - The app will hot-reload when you make changes to the code
-
-3. **Stop the application**
-   ```bash
-   docker-compose down
-   ```
-
-## Docker Configuration
-
-### Dockerfile
-The project includes a Dockerfile that:
-- Uses Node.js Alpine image for small footprint
-- Installs dependencies
-- Builds the application
-- Serves using a simple HTTP server
-
-### docker-compose.yml
-Orchestrates the application services:
-- **Frontend service**: Runs the React application
-- **Volume mounting**: Enables hot-reload during development
-- **Port mapping**: Exposes the app on port 8080
-
-## API Integration (Future Enhancement)
-
-The application is designed to easily integrate with a Flask REST API. The current implementation uses a static JSON file (`src/data/listings.json`) that can be replaced with API calls.
-
-### Expected API Endpoints
-```
-GET /api/designers          # Fetch all designers
-GET /api/designers/:id      # Fetch specific designer
-POST /api/designers/:id/shortlist  # Toggle shortlist
-POST /api/designers/:id/report     # Report designer
-```
-
-### Flask API Setup (Future)
-1. Create a Flask application with the above endpoints
-2. Replace the static JSON loading with fetch calls to your API
-3. Update the Docker Compose file to include the Flask service
-4. Configure environment variables for API base URL
-
-## Deployment Instructions
-
-### Frontend Deployment (Netlify)
-
-1. **Build the project**
-   ```bash
-   npm run build
-   ```
-
-2. **Deploy to Netlify**
-   - Connect your GitHub repository to Netlify
-   - Set build command: `npm run build`
-   - Set publish directory: `dist`
-   - Deploy the site
-
-3. **Environment Variables**
-   - Add any necessary environment variables in Netlify dashboard
-   - Configure API base URL for production
-
-### Backend Deployment (Cloud VM)
-
-1. **Prepare the Flask API**
-   - Create a Flask application with required endpoints
-   - Containerize using Docker
-   - Set up database connections
-
-2. **Deploy to Cloud VM**
-   - Use services like DigitalOcean, AWS EC2, or Google Cloud
-   - Set up Docker on the VM
-   - Deploy using docker-compose
-   - Configure reverse proxy (nginx) for production
-
-3. **Environment Variables**
-   ```bash
-   export DATABASE_URL=your_database_url
-   export SECRET_KEY=your_secret_key
-   export FLASK_ENV=production
-   ```
-
-## Configuration Settings
-
-### Environment Variables
-Create a `.env` file for local development:
-```
-VITE_API_BASE_URL=http://localhost:5000/api
-VITE_ENVIRONMENT=development
-```
-
-### Production Environment
-```
-VITE_API_BASE_URL=https://your-api-domain.com/api
-VITE_ENVIRONMENT=production
-```
-
-## Development Guidelines
-
-### Code Style
-- Use TypeScript for all new components
-- Follow React best practices with hooks
-- Use Tailwind CSS for styling
-- Implement responsive design first
-
-### Component Structure
-- Keep components small and focused
-- Use custom hooks for complex logic
-- Implement proper error handling
-- Add loading states for async operations
-
-### Testing
+### Option 1: Run with Docker (Easiest)
 ```bash
-npm run test          # Run unit tests
-npm run test:watch    # Run tests in watch mode
-npm run test:coverage # Generate coverage report
+# Clone the project
+git clone <repository-url>
+cd designer-shortlist-platform
+
+# Start everything with one command
+docker-compose up -d
+
+# Open in your browser
+# Main App: http://localhost:8080
+# Admin Panel: http://localhost:5001
 ```
 
-## Troubleshooting
+### Option 2: Run Locally
+```bash
+# Frontend: Install & build
+npm install
+npm run build
 
-### Common Issues
+# (Optional) Frontend dev server
+npm run dev
 
-1. **Port already in use**
-   ```bash
-   lsof -ti:8080 | xargs kill -9
-   ```
+# Backend: Install Python dependencies & start API
+cd api
+pip install -r requirements.txt
+python app.py
 
-2. **Docker build issues**
-   ```bash
-   docker system prune -a
-   docker-compose build --no-cache
-   ```
+# Open in your browser
+# Main App: http://localhost:8080
+# Admin Panel: http://localhost:5001
+```
 
-3. **Node modules issues**
-   ```bash
-   rm -rf node_modules package-lock.json
-   npm install
-   ```
+## ✨ Core Features (Assignment Requirements)
 
-### Performance Optimization
-- Images are loaded from Unsplash with optimized sizes
-- Components use React.memo where appropriate
-- Debounced search and filtering
-- Lazy loading for modals and heavy components
+### 🖌 **1. Styling & Layout**
+- Fully responsive, mobile-focused user interface following Figma specs
+- Consistent color scheme, professional typography, and touch-friendly spacing
 
-## Contributing
+### ⭐ **2. Interactive Shortlisting**
+- **Toggle shortlist** button with icon swap (outline ↔ filled)
+- **Shortlisted filter** to view only your favorites
+- **Persistent state** stored per session via backend & local updates
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### 🔍 **3. Sorting & Hide Functionality**
+- **Sort by Experience, Price, or Projects** with ascending/descending options
+- **Hide listing** with undo option
+- **Multiple views**: Switch between List, Contacts, Gallery, and Map views
 
-## License
+### 🎯 **4. Designer Actions**
+- **View Details**: Open modal with full profile, portfolio, rating, etc.
+- **Shortlist**: Mark/unmark designers as favorites
+- **Hide**: Temporarily remove a listing from view
+- **Report**: Submit inappropriate content via modal form
 
-This project is created as part of an internship assignment for EmptyCup platform.
+## 🔧 For Administrators
+
+### Add New Designers
+1. Go to the Admin Panel: `http://localhost:5001`
+2. Click "Add Designer"
+3. Fill out the simple form
+4. Click "Save" - that's it!
+
+### Upload Multiple Designers
+1. Prepare a JSON file with designer information
+2. Go to "Upload JSON" in the admin panel
+3. Select your file and upload
+4. All designers will be added automatically
+
+### Manage Existing Designers
+- View all designers in one place
+- Edit information anytime
+- See how many designers you have
+- Simple web interface - no technical knowledge needed
+
+## 📁 Project Structure
+
+```
+📂 api/                    # Backend (handles data)
+📂 src/                    # Frontend (what users see)
+📂 public/                 # Images and static files
+📄 docker-compose.yml      # Easy setup file
+📄 package.json           # Project dependencies
+```
+
+## 🛠️ Need Help Setting Up?
+
+### Requirements
+- A computer with internet connection
+- Docker installed (recommended) OR Node.js
+
+### Step-by-Step Setup
+
+**Method 1: Super Easy (Docker)**
+1. Download Docker from docker.com
+2. Clone this project
+3. Run `docker-compose up -d`
+4. Open http://localhost:8080
+
+**Method 2: Manual Setup**
+1. Install Node.js from nodejs.org
+2. Clone this project
+3. Run `npm install`
+4. Run `npm run build`
+5. Open the built files in a web browser
+
+### Having Issues?
+- Make sure Docker is running
+- Check that ports 8080 and 5001 aren't being used
+- Try restarting your computer
+- Contact support if you're still stuck
+
+## 🌐 Deploy to the Internet
+
+Want to put your designer platform online? Here are the easiest options:
+
+### Frontend (User Interface)
+**Netlify** - Free and simple
+1. Sign up at netlify.com
+2. Connect your GitHub account
+3. Select this project
+4. It will automatically deploy!
+
+### Backend (Data & Admin)
+**Railway** - Easy backend hosting
+1. Sign up at railway.app
+2. Connect your GitHub account
+3. Deploy the `api` folder
+4. Add your database connection
+
+### Database
+**Supabase** - Free PostgreSQL database
+1. Sign up at supabase.com
+2. Create a new project
+3. Copy the connection details
+4. Add them to Railway
+
+## 🔗 How It All Works
+
+The platform has three main parts:
+
+1. **Frontend** (Port 8080) - What users see and interact with
+2. **Backend** (Port 5001) - Handles data and admin functions
+3. **Database** - Stores all the designer information
+
+They all talk to each other automatically, so you don't need to worry about the technical details!
+
+## 💡 Built With
+
+**Simple, modern tools that work well together:**
+
+- **React** - For the user interface
+- **TypeScript** - Makes the code more reliable
+- **Tailwind CSS** - For beautiful, responsive design
+- **Flask** - Python backend that's easy to understand
+- **PostgreSQL** - Reliable database for storing designer info
+- **Docker** - Makes setup and deployment super easy
+
+## 🎯 Perfect For
+
+- **Interior Design Companies** - Showcase your team of designers
+- **Freelance Designers** - Get discovered by potential clients
+- **Homeowners** - Find the right designer for your project
+- **Businesses** - Source designers for office spaces
+- **Anyone** - Who needs interior design services
+
+## 📞 Support
+
+Need help? Here's how to get it:
+
+1. **Check the setup guide above** - Most issues are covered there
+2. **Look at the error messages** - They usually tell you what's wrong
+3. **Try the Docker option** - It's the most reliable way to run the app
+4. **Ask for help** - Contact the development team if you're stuck
+
+## 🛠️ Backend API
+
+Frontend communicates with the Flask API (default `http://localhost:5001/api` or override via `VITE_API_BASE_URL`):
+
+- **GET /api/health**: Health check endpoint
+- **GET /api/designers**: Retrieve all designer records
+- **POST /api/designers/:id/shortlist**
+  - Body: `{ "user_session": "<session_id>" }`
+  - Toggles shortlist status; responds with `{ "shortlisted": true|false }`
+- **POST /api/designers/:id/report**
+  - Body: `{ "reason": "<reason>", "description": "<text>", "user_session": "<session_id>" }`
+  - Submits a report for a designer
+
+## 🗄️ Database Schema
+
+Implemented with SQLite by default (or PostgreSQL via `DATABASE_URL`):
+
+- **designers**: `id, name, rating, description, projects, experience, price_range, phone1, phone2, location, specialties (JSON), portfolio (JSON), created_at, updated_at`
+- **shortlists**: `id, designer_id (FK), user_session, created_at, UNIQUE(designer_id, user_session)`  
+- **reports**: `id, designer_id (FK), reason, description, user_session, created_at`
 
 ---
 
-**Note**: This application demonstrates modern web development practices with React, TypeScript, and responsive design. The codebase is structured to be easily maintainable and scalable for future enhancements.
+**Ready to find your perfect interior designer? Get started now!** 🏡✨
