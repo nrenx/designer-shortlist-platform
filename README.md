@@ -22,8 +22,6 @@ A mobile-first web application that lists all interior designers active on Empty
 - [💡 Built With](#️-built-with)
 - [📞 Support](#️-support)
 
-## ⚙️ Configuration
-- **VITE_API_BASE_URL** (optional): Override the default backend API URL (default `http://localhost:5001/api`)
 
 ## 🚀 Quick Start
 
@@ -47,7 +45,7 @@ docker-compose up -d
 npm install
 npm run build
 
-# (Optional) Frontend dev server
+# Frontend dev server
 npm run dev
 
 # Backend: Install Python dependencies & start API
@@ -141,49 +139,78 @@ python app.py
 
 ## 🌐 Deploy to the Internet
 
-Want to put your designer platform online? Here are the easiest options:
+Want to put your designer platform online? Here's the simplest, most cost-effective approach:
+
+### Backend + Database (All-in-One)
+**Railway** - Complete backend solution ($5/month for everything!)
+1. Sign up at [railway.app](https://railway.app)
+2. Create a new project
+3. Add PostgreSQL database service (automatic setup)
+4. Deploy from GitHub (uses `Dockerfile.backend`)
+5. Railway automatically connects everything!
+
+**Why Railway?**
+- ✅ Database + API hosting in one platform
+- ✅ Only $5/month total (vs $30+ with separate services)
+- ✅ Automatic configuration and internal networking
+- ✅ Built-in monitoring and backups
 
 ### Frontend (User Interface)
 **Netlify** - Free and simple
-1. Sign up at netlify.com
+1. Sign up at [netlify.com](https://netlify.com)
 2. Connect your GitHub account
 3. Select this project
-4. It will automatically deploy!
-
-### Backend (Data & Admin)
-**Railway** - Easy backend hosting
-1. Sign up at railway.app
-2. Connect your GitHub account
-3. Deploy the `api` folder
-4. Add your database connection
-
-### Database
-**Supabase** - Free PostgreSQL database
-1. Sign up at supabase.com
-2. Create a new project
-3. Copy the connection details
-4. Add them to Railway
+4. Set environment variable: `VITE_API_BASE_URL=https://your-app.railway.app/api`
+5. It will automatically deploy!
 
 ## 🔗 How It All Works
 
-The platform has three main parts:
+The platform has three main parts that work together seamlessly:
 
-1. **Frontend** (Port 8080) - What users see and interact with
-2. **Backend** (Port 5001) - Handles data and admin functions
-3. **Database** - Stores all the designer information
+1. **Frontend** (Netlify) - What users see and interact with
+2. **Backend API** (Railway) - Handles data processing and admin functions
+3. **Database** (Railway PostgreSQL) - Stores all designer information securely
 
-They all talk to each other automatically, so you don't need to worry about the technical details!
+**Local Development:**
+- Frontend: `http://localhost:8080`
+- Backend: `http://localhost:5001`
+- Database: SQLite (automatic)
+
+**Production:**
+- Frontend: `https://your-app.netlify.app`
+- Backend: `https://your-app.railway.app`
+- Database: Railway PostgreSQL (automatic)
+
+Everything connects automatically - no complex configuration needed!
 
 ## 💡 Built With
 
-**Simple, modern tools that work well together:**
+**Modern, reliable technologies optimized for cost and performance:**
 
-- **React** - For the user interface
-- **TypeScript** - Makes the code more reliable
-- **Tailwind CSS** - For beautiful, responsive design
-- **Flask** - Python backend that's easy to understand
-- **PostgreSQL** - Reliable database for storing designer info
-- **Docker** - Makes setup and deployment super easy
+### Frontend
+- **React** - Interactive user interface
+- **TypeScript** - Type-safe, reliable code
+- **Tailwind CSS** - Beautiful, responsive design
+- **Vite** - Fast development and building
+
+### Backend
+- **Flask** - Lightweight Python web framework
+- **PostgreSQL** - Enterprise-grade database
+- **Gunicorn** - Production WSGI server
+- **Docker** - Containerized deployment
+
+### Hosting & Deployment
+- **Railway** - Backend + Database ($5/month total)
+- **Netlify** - Frontend hosting (free tier available)
+- **Total Cost**: ~$5/month for full production deployment
+- **Integrated Architecture** - Everything works together seamlessly
+
+### 💰 Cost Comparison
+| Solution | Monthly Cost | Setup Complexity |
+|----------|-------------|------------------|
+| **Railway + Netlify** | **$5** | ✅ Simple |
+| Traditional (Railway + Supabase) | $30+ | ❌ Complex |
+| AWS/GCP Full Stack | $50+ | ❌ Very Complex |
 
 ## 🎯 Perfect For
 
@@ -217,11 +244,17 @@ Frontend communicates with the Flask API (default `http://localhost:5001/api` or
 
 ## 🗄️ Database Schema
 
-Implemented with SQLite by default (or PostgreSQL via `DATABASE_URL`):
+**Smart database abstraction** - automatically uses SQLite for development and PostgreSQL for production:
 
-- **designers**: `id, name, rating, description, projects, experience, price_range, phone1, phone2, location, specialties (JSON), portfolio (JSON), created_at, updated_at`
-- **shortlists**: `id, designer_id (FK), user_session, created_at, UNIQUE(designer_id, user_session)`  
+### Tables
+- **designers**: `id, name, rating, description, projects, experience, price_range, phone1, phone2, location, specialties (JSONB), portfolio (JSONB), created_at, updated_at`
+- **shortlists**: `id, designer_id (FK), user_session, created_at, UNIQUE(designer_id, user_session)`
 - **reports**: `id, designer_id (FK), reason, description, user_session, created_at`
+
+### Environment Detection
+- **Development**: Uses SQLite (`sqlite:///emptycup.db`) - no setup required
+- **Production**: Uses PostgreSQL when `DATABASE_URL` is provided by Railway
+- **Automatic Migration**: App detects database type and adjusts queries accordingly
 
 ---
 
